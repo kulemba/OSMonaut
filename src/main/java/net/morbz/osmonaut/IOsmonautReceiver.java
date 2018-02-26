@@ -44,7 +44,7 @@ public interface IOsmonautReceiver {
 	 *            The tags of the entity
 	 * @return true if entity is needed
 	 */
-	public boolean needsEntity(EntityType type, Tags tags);
+	public boolean needsEntity(Entity entity);
 
 	/**
 	 * Called when Osmonaut has found an entity. This is only called if
