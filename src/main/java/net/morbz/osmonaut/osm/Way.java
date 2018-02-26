@@ -27,6 +27,7 @@ package net.morbz.osmonaut.osm;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.morbz.osmonaut.geometry.Bounds;
@@ -51,7 +52,7 @@ public class Way extends Entity {
 	 */
 	public Way(long id, Tags tags, List<Node> nodes) {
 		super(id, tags);
-		this.nodes = nodes;
+		this.nodes = nodes != null ? new ArrayList<>(nodes) : null;
 	}
 
 	/**
