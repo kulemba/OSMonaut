@@ -5,6 +5,7 @@ import static net.morbz.osmonaut.osm.EntityType.WAY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -24,9 +25,7 @@ public class OsmonautTest {
 	public void should_find_nodes() throws Exception {
 		List<Node> nodes = scan(new EntityFilter(true, false, false), new Predicate<Tags>() {
 			@Override
-			public boolean test(Tags tags) {
-				return tags.hasKeyValue("railway", "subway_entrance");
-			}
+			public boolean test(Tags tags) { return tags.hasKeyValue("railway", "subway_entrance"); }
 		});
 
 		assertThat(nodes.get(1)).isEqualToComparingFieldByFieldRecursively(
@@ -78,11 +77,13 @@ public class OsmonautTest {
 	private <T> List<T> scan(EntityFilter filter, final Predicate<Tags> predicate) {
 		String file = OsmonautTest.class.getResource("/concorde-paris.osm.pbf").getPath();
 		final List<T> acc = new ArrayList<>();
-		Osmonaut osmonaut = new Osmonaut(file, filter);
+		final List<String> filterTags = Arrays.asList("railway", "public_transport", "bridge", "name", "wheelchair");
+		Osmonaut osmonaut = new Osmonaut(file, filter, filterTags);
+		osmonaut.setClearEntityTags(false);
 		osmonaut.scan(new IOsmonautReceiver() {
 			@Override
-			public boolean needsEntity(EntityType type, Tags tags) {
-				return predicate.test(tags);
+			public boolean needsEntity(Entity entity) {
+				return predicate.test(entity.getTags());
 			}
 
 			@SuppressWarnings("unchecked")
