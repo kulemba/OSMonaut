@@ -58,17 +58,25 @@ public class Osmonaut {
 	private int processors;
 	private boolean storeOnDisk = false;
 	private int verbosity = 1;
+	private boolean clearEntityTags = false;
+
+	//Store only this tags
+	private final List<String> filterTags;
+
 
 	/**
 	 * @param filename
 	 *            The name of the .pbf file to scan
 	 * @param filter
 	 *            The entity filter that tells which entities should be scanned
+     * @param filterTags
+     *            Only this tag names are stored in the Tags object (to reduce memory)
 	 */
-	public Osmonaut(String filename, EntityFilter filter) {
+	public Osmonaut(String filename, EntityFilter filter, List<String> filterTags) {
 		this.file = new File(filename);
 		this.filter = filter;
 		processors = Math.min(4, Runtime.getRuntime().availableProcessors());
+		this.filterTags = filterTags;
 	}
 
 	/**
@@ -83,8 +91,8 @@ public class Osmonaut {
 	 * @deprecated Use setWayNodeTags() instead.
 	 */
 	@Deprecated
-	public Osmonaut(String filename, EntityFilter filter, boolean wayNodeTags) {
-		this(filename, filter);
+	public Osmonaut(String filename, EntityFilter filter, boolean wayNodeTags, List<String> filterTags) {
+		this(filename, filter, filterTags);
 		this.wayNodeTags = wayNodeTags;
 	}
 
@@ -119,7 +127,7 @@ public class Osmonaut {
 		}
 
 		// Create PBF decoder
-		decoder = new PbfDecoder(file, processors);
+		decoder = new PbfDecoder(file, processors, filterTags);
 
 		// Create caches
 		if (storeOnDisk) {
@@ -183,6 +191,7 @@ public class Osmonaut {
 						wayCache.addNeeded(member.getEntity().getId());
 						break;
 					case RELATION:
+                        log("Super relation needed..." + member.toString() + "for " +  relation.getId(), 1);
 						// TODO: Handle super-relations
 						break;
 					}
@@ -236,14 +245,20 @@ public class Osmonaut {
 							node = new Node(node.getId(), null, node.getLatlon());
 						}
 						nodeCache.addEntity(node);
-					}
+					} else if (clearEntityTags) {
+						//Clear tags and remove it from cache
+					    //nodeCache.removeEntity(node);
+                        node.clearTags();
+                    }
 				}
 			});
 		}
 
 		if(filter.getEntityEnabled(EntityType.WAY) || wayCache.needsEntities()) {
 			log("...Scanning ways", 1);
-			decoder.scan(EntityType.WAY, new OsmonautSink() {
+
+            final List<Node> nodes = new ArrayList<Node>();
+            decoder.scan(EntityType.WAY, new OsmonautSink() {
 				@Override
 				public void foundEntity(Entity entity) {
 					Way way = (Way)entity;
@@ -254,18 +269,17 @@ public class Osmonaut {
 					}
 
 					// Assemble nodes
-					List<Node> nodes = new ArrayList<Node>();
+                    nodes.clear();
 					for (Node incompleteNode : way.getNodes()) {
 						Node node = nodeCache.getEntity(incompleteNode.getId());
-						if (node == null) {
-							log("E: Node for way not found", 0);
+						if (node == null) { log("E: Node for way not found " + incompleteNode.getId() + " way: " + way.getId(), 0);
 						} else {
 							nodes.add(node);
 						}
 					}
 
 					// Assemble way
-					Way newWay = new Way(way.getId(), way.getTags(), nodes);
+                    Way newWay = new Way(way.getId(), way.getTags(), nodes);
 
 					// Is needed by receiver?
 					if (entityNeededForReceiver(way)) {
@@ -275,13 +289,28 @@ public class Osmonaut {
 					// Is needed for relations?
 					if (wayCache.isNeeded(way.getId())) {
 						wayCache.addEntity(newWay);
-					}
+					} else if (clearEntityTags) {
+						//TODO count the number of ways/relations needs a node 
+					    //log("***Releasing nodes for way id: " + way.getId(), 0);
+					    //Remove nodes
+                        /*for (Node node : way.getNodes()) {
+                            //log("****Releasing nodes for node id: " + way.getId(), 0);
+                            nodeCache.removeEntity(node);
+                            node = null;
+                        }
+                        way.getNodes().clear();
+                        way.getTags().clear();*/
+                    }
+
+                    newWay = null;
 				}
 			});
 		}
 
 		if(filter.getEntityEnabled(EntityType.RELATION)) {
 			log("...Scanning relations", 1);
+            List<RelationMember> members = new ArrayList<RelationMember>();
+
 			decoder.scan(EntityType.RELATION, new OsmonautSink() {
 				@Override
 				public void foundEntity(Entity entity) {
@@ -294,11 +323,12 @@ public class Osmonaut {
 
 					// Assemble members
 					boolean incomplete = relation.isIncomplete();
-					List<RelationMember> members = new ArrayList<RelationMember>();
+                    members.clear();
+                    Entity memberEntity = null;
 					for (RelationMember member : relation.getMembers()) {
 						// Get real entity
 						long id = member.getEntity().getId();
-						Entity memberEntity = null;
+                        memberEntity = null;
 						switch (member.getEntity().getEntityType()) {
 						case NODE:
 							memberEntity = nodeCache.getEntity(id);
@@ -322,6 +352,13 @@ public class Osmonaut {
 					// Assemble relation
 					Relation newRelation = new Relation(relation.getId(), relation.getTags(), members, incomplete);
 					receiver.foundEntity(newRelation);
+					if (clearEntityTags) {
+						relation.getTags().clear();
+						newRelation.getTags().clear();
+						members.clear();
+					}
+
+					newRelation = null;
 				}
 			});
 		}
@@ -340,7 +377,7 @@ public class Osmonaut {
 		if (!filter.getEntityEnabled(type)) {
 			return false;
 		}
-		if (!receiver.needsEntity(type, entity.getTags())) {
+		if (!receiver.needsEntity(entity)) {
 			return false;
 		}
 		return true;
@@ -394,4 +431,11 @@ public class Osmonaut {
 	public void setVerbosity(int verbosity) {
 		this.verbosity = verbosity;
 	}
+
+	/**
+	 * If true all tags of the entity are cleared automatically and also entity is removed from any cache when not needed anymore.
+	 * Is turned off by default
+	 * @param clearEntityTags
+	 */
+	public void setClearEntityTags(boolean clearEntityTags) { this.clearEntityTags = clearEntityTags;}
 }
