@@ -38,6 +38,9 @@ public class PbfDecoder {
 	private RawBlobIndexer nodeIndexer, wayIndexer, relationIndexer;
 	private boolean firstScan = true;
 
+	//LG
+    private final List<String> filterTags;
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -45,10 +48,13 @@ public class PbfDecoder {
 	 *            The file to read.
 	 * @param workers
 	 *            The number of worker threads for decoding PBF blocks.
+     * @param filterTags
+     *            Only this tag names are stored in tags
 	 */
-	public PbfDecoder(final File file, int workers) {
+	public PbfDecoder(final File file, int workers, List<String> filterTags) {
 		this.workers = workers;
 		this.maxPendingBlobs = workers + 1;
+		this.filterTags = filterTags;
 
 		// Open PBF file
 		try {
@@ -91,9 +97,10 @@ public class PbfDecoder {
 	}
 
 	private void sendResultsToSink(int targetQueueSize) {
+        PbfBlobResult blobResult = null;
 		while (blobResults.size() > targetQueueSize) {
 			// Get the next result from the queue and wait for it to complete.
-			PbfBlobResult blobResult = blobResults.remove();
+            blobResult = blobResults.remove();
 			while (!blobResult.isComplete()) {
 				// The thread hasn't finished processing yet so wait for an
 				// update from another thread before checking again.
@@ -109,8 +116,14 @@ public class PbfDecoder {
 			// their results.
 			lock.unlock();
 			for (Entity entity : blobResult.getEntities()) {
-				sink.foundEntity(entity);
+				try {
+					sink.foundEntity(entity);
+				} catch (Throwable ex) {
+					ex.printStackTrace();
+				}
+				entity = null;
 			}
+			blobResult = null;
 			lock.lock();
 		}
 	}
@@ -177,8 +190,9 @@ public class PbfDecoder {
 			};
 
 			// Create the blob decoder itself and execute it on a worker thread.
-			PbfBlobDecoder blobDecoder = new PbfBlobDecoder(rawBlob.getType(), rawBlob.getData(), decoderListener, type);
+			PbfBlobDecoder blobDecoder = new PbfBlobDecoder(rawBlob.getType(), rawBlob.getData(), decoderListener, type, filterTags);
 			executorService.execute(blobDecoder);
+			blobDecoder = null;
 
 			// If the number of pending blobs has reached capacity we must begin
 			// sending results to the sink. This method will block until blob
