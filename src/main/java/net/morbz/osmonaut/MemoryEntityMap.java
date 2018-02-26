@@ -40,7 +40,7 @@ public class MemoryEntityMap<T extends Entity> implements EntityMap<T> {
 	private List<List<T>> buckets = new ArrayList<List<T>>();
 	private boolean sorted = true;
 
-	private static final int entitiesPerBucket = 1_000_000;
+	private static final int entitiesPerBucket = 1000000;
 
 	/**
 	 * {@inheritDoc}
@@ -106,6 +106,30 @@ public class MemoryEntityMap<T extends Entity> implements EntityMap<T> {
 		return null;
 	}
 
+	@Override
+	public boolean remove(T entity) {
+
+		// Ensure that arrays are sorted
+		if(!sorted) {
+			sort();
+			sorted = true;
+		}
+
+		// Check array size
+		int bucketId = getBucketId(entity.getId());
+		if(!arraySpaceAllocated(bucketId)) {
+			return false;
+		}
+
+		// Get bucket
+		List<T> bucket = buckets.get(bucketId);
+		if(bucket == null) {
+			return false;
+		}
+
+		return bucket.remove(entity);
+	}
+
 	private void sort() {
 		// Create comparator
 		Comparator<T> comp = new Comparator<T>() {
@@ -131,4 +155,6 @@ public class MemoryEntityMap<T extends Entity> implements EntityMap<T> {
 	private boolean arraySpaceAllocated(int bucketId) {
 		return buckets.size() >= bucketId + 1;
 	}
+
+
 }
