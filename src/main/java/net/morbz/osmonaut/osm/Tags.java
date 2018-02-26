@@ -215,4 +215,18 @@ public class Tags implements Iterable<String>, Externalizable {
 		keys = (List<String>)in.readObject();
 		values = (List<String>)in.readObject();
 	}
+
+	/**
+     * Empty all tags
+     */
+    public void clear() {
+	    if (keys != null) {
+	        keys.clear();
+        }
+	    if (values != null) {
+            values.clear();
+        }
+	    keys = null;
+	    values = null;
+    }
 }
