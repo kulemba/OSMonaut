@@ -45,6 +45,9 @@ public class PbfBlobDecoder implements Runnable {
 	private PbfFieldDecoder fieldDecoder;
 	private EntityFilter containedTypes = new EntityFilter(false, false, false);
 
+	//LG
+	private final List<String> keepColumns;
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -56,12 +59,15 @@ public class PbfBlobDecoder implements Runnable {
 	 *            The listener for receiving decoding results.
 	 * @param type
 	 *            The entity of which entities will be returned.
+	 * @param keepColumns
+	 * 			  Only this tags with this names are stored. All others are not. (to reduce memory)
 	 */
-	public PbfBlobDecoder(String blobType, byte[] rawBlob, PbfBlobDecoderListener listener, EntityType type) {
+	public PbfBlobDecoder(String blobType, byte[] rawBlob, PbfBlobDecoderListener listener, EntityType type, List<String> keepColumns)  {
 		this.blobType = blobType;
 		this.rawBlob = rawBlob;
 		this.listener = listener;
 		this.entityType = type;
+		this.keepColumns = keepColumns;
 	}
 
 	private byte[] readBlobContent() throws IOException {
@@ -87,7 +93,7 @@ public class PbfBlobDecoder implements Runnable {
 		}
 
 		return blobData;
-	}
+	 }
 
 	private void processOsmHeader(byte[] data) throws InvalidProtocolBufferException {
 		Osmformat.HeaderBlock header = Osmformat.HeaderBlock.parseFrom(data);
@@ -125,7 +131,9 @@ public class PbfBlobDecoder implements Runnable {
 		while (keyIterator.hasNext()) {
 			String key = fieldDecoder.decodeString(keyIterator.next());
 			String value = fieldDecoder.decodeString(valueIterator.next());
-			tags.set(key, value);
+			if (keepColumns.contains(key)) {
+				tags.set(key, value);
+			}
 		}
 		return tags;
 	}
@@ -168,6 +176,8 @@ public class PbfBlobDecoder implements Runnable {
 			// in the same PBF array. Each set of tags is delimited by an index
 			// with a value of 0.
 			Tags tags = new Tags();
+			String keyName = null;
+			String value = null;
 			while (keysValuesIterator.hasNext()) {
 				int keyIndex = keysValuesIterator.next();
 				if (keyIndex == 0) {
@@ -179,7 +189,11 @@ public class PbfBlobDecoder implements Runnable {
 				}
 				int valueIndex = keysValuesIterator.next();
 
-				tags.set(fieldDecoder.decodeString(keyIndex), fieldDecoder.decodeString(valueIndex));
+				keyName = fieldDecoder.decodeString(keyIndex);
+				value = fieldDecoder.decodeString(valueIndex);
+				if (keepColumns.contains(keyName)) {
+					tags.set(keyName, value);
+				}
 			}
 
 			// Create node
