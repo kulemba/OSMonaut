@@ -67,4 +67,9 @@ public class DiskEntityMap<T extends Entity> implements EntityMap<T> {
 		return entities.get(id);
 	}
 
+	@Override
+	public boolean remove(T entity) {
+		return false;
+	}
+
 }

@@ -109,6 +109,11 @@ public class EntityCache<T extends Entity> {
 	 * @return true if there is at least one needed entity
 	 */
 	public boolean needsEntities() {
-		return !idTracker.isEmpty();
+	    return !idTracker.isEmpty();
+	}
+
+	public void removeEntity(T entity) {
+		entityMap.remove(entity);
+		entity.clearTags();
 	}
 }

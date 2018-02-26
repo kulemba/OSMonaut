@@ -43,4 +43,10 @@ public interface EntityMap<T extends Entity> {
 	 * present
 	 */
 	public T get(long id);
+
+	/**
+	 * Remove an entity
+	 * @param entity
+	 */
+	public boolean remove(T entity);
 }
