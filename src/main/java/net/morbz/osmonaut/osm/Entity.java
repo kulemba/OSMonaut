@@ -79,6 +79,16 @@ public abstract class Entity implements Externalizable {
 	}
 
 	/**
+	 * Clear all tags
+	 */
+	public void clearTags() {
+	    if (tags != null) {
+	        tags.clear();
+        }
+		tags = null;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
