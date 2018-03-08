@@ -5,9 +5,12 @@ import static net.morbz.osmonaut.osm.EntityType.WAY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import net.morbz.osmonaut.geometry.Polygon;
+import org.assertj.core.data.Percentage;
 import org.junit.Test;
 
 import net.morbz.osmonaut.osm.Entity;
@@ -115,5 +118,99 @@ public class OsmonautTest {
 		tags.set("name", "Métro 1");
 		tags.set("railway", "subway");
 		return tags;
+	}
+
+	@Test
+	public void polygon_area_centroid() {
+		// a square with side length 2, oriented CCW
+		{
+			Polygon squareCCW = new Polygon(Arrays.asList(
+					new LatLon(0, 0),
+					new LatLon(0, 2),
+					new LatLon(2, 2),
+					new LatLon(2, 0)
+			));
+			assertThat(squareCCW.getSignedArea()).isEqualTo(4);
+			assertThat(squareCCW.getCenter()).isEqualTo(new LatLon(1, 1));
+		}
+		// a square with side length 2, oriented CW
+		{
+			Polygon squareCW = new Polygon(Arrays.asList(
+					new LatLon(0, 0),
+					new LatLon(2, 0),
+					new LatLon(2, 2),
+					new LatLon(0, 2)
+			));
+			assertThat(squareCW.getSignedArea()).isEqualTo(-4);
+			assertThat(squareCW.getCenter()).isEqualTo(new LatLon(1, 1));
+		}
+		// a circle with center (42,16) and radius 1000, oriented CCW
+		{
+			LatLon center = new LatLon(42, 16);
+			double radius = 1000;
+			double PI2 = Math.PI * 2.0;
+			double step = PI2 / 360.0;
+			List<LatLon> circlePoints = new ArrayList<>(360);
+			for (double t = 0; t < PI2; t += step)
+				circlePoints.add(new LatLon(
+						center.getLat() + radius * Math.sin(t),
+						center.getLon() + radius * Math.cos(t)
+				));
+			Polygon circle = new Polygon(circlePoints);
+			assertThat(circle.getSignedArea()).isCloseTo(Math.pow(radius, 2.0) * Math.PI, Percentage.withPercentage(0.1));
+			LatLon calculatedCenter = circle.getCenter();
+			assertThat(calculatedCenter.getLat()).isCloseTo(center.getLat(), Percentage.withPercentage(0.1));
+			assertThat(calculatedCenter.getLon()).isCloseTo(center.getLon(), Percentage.withPercentage(0.1));
+		}
+		// a pentagram
+		{
+			double alpha = (2 * Math.PI) / 10;
+			double radius = 8;
+			double shortRadius = radius * (Math.sin(alpha/2.0)/Math.sin(Math.PI - 1.5*alpha));
+			LatLon center = new LatLon(42,16);
+			List<LatLon> starPoints = new ArrayList<>(10);
+			for(int i = 10; i > 0; i--)
+			{
+				double r = i%2 == 1 ? radius : shortRadius;
+				double omega = alpha * i;
+				starPoints.add(new LatLon(
+						(r * Math.cos(omega)) + center.getLat(),
+						(r * Math.sin(omega)) + center.getLon()
+				));
+			}
+			Polygon star = new Polygon(starPoints);
+			assertThat(star.getSignedArea()).isCloseTo(radius * shortRadius * Math.sin(alpha) * 5.0, Percentage.withPercentage(0.1));
+			LatLon calculatedCenter = star.getCenter();
+			assertThat(calculatedCenter.getLat()).isCloseTo(center.getLat(), Percentage.withPercentage(0.1));
+			assertThat(calculatedCenter.getLon()).isCloseTo(center.getLon(), Percentage.withPercentage(0.1));
+		}
+		{
+			/*
+			 * Just some weird shape, wound CCW
+			 *  6 ┤     ┌─←─┐
+			 *  5 ┤     ↓   ↑
+			 *  4 ┤     │   └─←─┐
+			 *  3 ┤     ↓ •     ↑   the dot denotes the centroid
+			 *  2 ┤ ┌─←─┼─→───→─┘
+			 *  1 ┤ ↓   ↑
+			 *  0 ┤ └─→─┘
+			 * -1 ┼─┬─┬─┬─┬─┬─┬─┬─
+			 *   -1 0 1 2 3 4 5 6
+			 */
+			Polygon shape = new Polygon(Arrays.asList(
+					new LatLon(0, 0),
+					new LatLon(0, 2),
+					new LatLon(2, 2),
+					new LatLon(2, 6),
+					new LatLon(4, 6),
+					new LatLon(4, 4),
+					new LatLon(6, 4),
+					new LatLon(6, 2),
+					new LatLon(2, 2),
+					new LatLon(2, 0)
+			));
+			assertThat(shape.getSignedArea()).isEqualTo(16);
+			assertThat(shape.getCenter()).isEqualTo(new LatLon(3, 3));
+		}
 	}
 }

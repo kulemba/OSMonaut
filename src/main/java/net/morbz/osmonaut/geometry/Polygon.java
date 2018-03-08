@@ -96,34 +96,58 @@ public class Polygon implements IPolygon {
 		this.bounds.extend(latlon);
 	}
 
+	public double getSignedArea() {
+		int n;
+		if((n = coords.size()-1) >= 3) { // coords is closed, discard the last point
+			int i, j;
+			LatLon lli,llj;
+			double ai,xi,yi,xj,yj;
+			double atmp = 0;
+			for (i = n-1, j = 0; j < n; i = j, j++)
+			{
+				lli = coords.get(i);
+				llj = coords.get(j);
+				xi = lli.getLon();
+				yi = lli.getLat();
+				xj = llj.getLon();
+				yj = llj.getLat();
+				ai = xi * yj - xj * yi;
+				atmp += ai;
+			}
+			return atmp / 2;
+		}
+		return 0;
+	}
+
 	/**
 	 * Returns the geometric centroid of this polygon.
 	 * 
 	 * @return The center of this polygon or null if there are no coordinates
 	 */
 	public LatLon getCenter() {
-		// Calculate centroid
-		// This part is buggy
-		// TODO: Fix centroid calculation
-		/*
-		 * double centerX = 0, centerY = 0; double signedArea = 0.0; double x0 =
-		 * 0.0; // Current vertex X double y0 = 0.0; // Current vertex Y double
-		 * x1 = 0.0; // Next vertex X double y1 = 0.0; // Next vertex Y double a
-		 * = 0.0; // Partial signed area
-		 * 
-		 * // For all vertices for(int i = 0; i < coords.size() - 1; i++) { x0 =
-		 * coords.get(i).getLon(); y0 = coords.get(i).getLat(); x1 =
-		 * coords.get(i + 1).getLon(); y1 = coords.get(i + 1).getLat(); a = x0 *
-		 * y1 - x1 * y0; signedArea += a; centerX += (x0 + x1) * a; centerY +=
-		 * (y0 + y1) * a; }
-		 * 
-		 * // If there is an area we have found the centroid if(signedArea != 0)
-		 * { signedArea *= 0.5; centerX /= (6.0 * signedArea); centerY /= (6.0 *
-		 * signedArea); return new LatLon(centerY, centerX); }
-		 */
+		// from http://www.faqs.org/faqs/graphics/algorithms-faq/ Subject 2.02
+		int n;
+		if((n = coords.size()-1) >= 3) { // coords is closed, discard the last point
+			int i, j;
+			LatLon pi,pj;
+			double ai,xi,yi,xj,yj;
+			double atmp = 0, xtmp = 0, ytmp = 0;
+			for (i = n-1, j = 0; j < n; i = j, j++)
+			{
+				pi = coords.get(i);
+				pj = coords.get(j);
+				xi = pi.getLon(); yi = pi.getLat();
+				xj = pj.getLon(); yj = pj.getLat();
+				ai = xi * yj - xj * yi;
+				atmp += ai;
+				xtmp += (xj + xi) * ai;
+				ytmp += (yj + yi) * ai;
+			}
+			if (atmp != 0)
+				return new LatLon(ytmp / (3 * atmp), xtmp / (3 * atmp));
+		}
 
-		// Otherwise we have to use the bounding box (e.g. when all coords are
-		// in one line)
+		// Otherwise we have to use the bounding box (e.g. when all coords are in one line)
 		return bounds.getCenter();
 	}
 
