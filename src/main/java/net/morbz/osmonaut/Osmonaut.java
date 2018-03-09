@@ -198,6 +198,7 @@ public class Osmonaut {
 						wayCache.addNeeded(member.getEntity().getId());
 						break;
 					case RELATION:
+						log("Super relation needed..." + member.toString() + "for " +  relation.getId(), 1);
 						// TODO: Handle super-relations
 						break;
 					}
@@ -273,7 +274,7 @@ public class Osmonaut {
 					for (Node incompleteNode : way.getNodes()) {
 						Node node = nodeCache.getEntity(incompleteNode.getId());
 						if (node == null) {
-							log("E: Node for way not found", 0);
+							log("E: Node for way not found " + incompleteNode.getId() + " way: " + way.getId(), 0);
 						} else {
 							nodes.add(node);
 						}
