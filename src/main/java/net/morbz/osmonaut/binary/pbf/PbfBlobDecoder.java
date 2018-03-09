@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -44,6 +45,23 @@ public class PbfBlobDecoder implements Runnable {
 	private EntityType entityType;
 	private PbfFieldDecoder fieldDecoder;
 	private EntityFilter containedTypes = new EntityFilter(false, false, false);
+	private Predicate<String> tagFilter;
+
+	/**
+	 * Creates a new instance.
+	 *
+	 * @param blobType
+	 *            The type of blob.
+	 * @param rawBlob
+	 *            The raw data of the blob.
+	 * @param listener
+	 *            The listener for receiving decoding results.
+	 * @param type
+	 *            The entity of which entities will be returned.
+	 */
+	public PbfBlobDecoder(String blobType, byte[] rawBlob, PbfBlobDecoderListener listener, EntityType type)  {
+		this(blobType, rawBlob, listener, type, null);
+	}
 
 	/**
 	 * Creates a new instance.
@@ -56,12 +74,15 @@ public class PbfBlobDecoder implements Runnable {
 	 *            The listener for receiving decoding results.
 	 * @param type
 	 *            The entity of which entities will be returned.
+	 * @param tagFilter
+	 * 			  Only this tags with names that pass this predicate are stored. May be null
 	 */
-	public PbfBlobDecoder(String blobType, byte[] rawBlob, PbfBlobDecoderListener listener, EntityType type) {
+	public PbfBlobDecoder(String blobType, byte[] rawBlob, PbfBlobDecoderListener listener, EntityType type, Predicate<String> tagFilter)  {
 		this.blobType = blobType;
 		this.rawBlob = rawBlob;
 		this.listener = listener;
 		this.entityType = type;
+		this.tagFilter = tagFilter;
 	}
 
 	private byte[] readBlobContent() throws IOException {
@@ -125,7 +146,8 @@ public class PbfBlobDecoder implements Runnable {
 		while (keyIterator.hasNext()) {
 			String key = fieldDecoder.decodeString(keyIterator.next());
 			String value = fieldDecoder.decodeString(valueIterator.next());
-			tags.set(key, value);
+			if(tagFilter == null || tagFilter.test(key))
+				tags.set(key, value);
 		}
 		return tags;
 	}
@@ -179,7 +201,10 @@ public class PbfBlobDecoder implements Runnable {
 				}
 				int valueIndex = keysValuesIterator.next();
 
-				tags.set(fieldDecoder.decodeString(keyIndex), fieldDecoder.decodeString(valueIndex));
+				String key = fieldDecoder.decodeString(keyIndex);
+				String value = fieldDecoder.decodeString(valueIndex);
+				if(tagFilter == null || tagFilter.test(key))
+					tags.set(key, value);
 			}
 
 			// Create node

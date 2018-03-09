@@ -27,6 +27,7 @@ package net.morbz.osmonaut;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -58,6 +59,7 @@ public class Osmonaut {
 	private int processors;
 	private boolean storeOnDisk = false;
 	private int verbosity = 1;
+	private Predicate<String> tagFilter;
 
 	/**
 	 * @param filename
@@ -66,9 +68,22 @@ public class Osmonaut {
 	 *            The entity filter that tells which entities should be scanned
 	 */
 	public Osmonaut(String filename, EntityFilter filter) {
+		this(filename, filter, null);
+	}
+
+	/**
+	 * @param filename
+	 *            The name of the .pbf file to scan
+	 * @param filter
+	 *            The entity filter that tells which entities should be scanned
+	 * @param tagFilter
+	 * 			  Only this tags with names that pass this predicate are stored. May be null
+	 */
+	public Osmonaut(String filename, EntityFilter filter, Predicate<String> tagFilter) {
 		this.file = new File(filename);
 		this.filter = filter;
 		processors = Math.min(4, Runtime.getRuntime().availableProcessors());
+		this.tagFilter = tagFilter;
 	}
 
 	/**
@@ -119,7 +134,7 @@ public class Osmonaut {
 		}
 
 		// Create PBF decoder
-		decoder = new PbfDecoder(file, processors);
+		decoder = new PbfDecoder(file, processors, tagFilter);
 
 		// Create caches
 		if (storeOnDisk) {

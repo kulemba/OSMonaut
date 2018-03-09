@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import net.morbz.osmonaut.EntityFilter;
 import net.morbz.osmonaut.binary.OsmonautSink;
@@ -37,18 +38,34 @@ public class PbfDecoder {
 	private ExecutorService executorService;
 	private RawBlobIndexer nodeIndexer, wayIndexer, relationIndexer;
 	private boolean firstScan = true;
+	private Predicate<String> tagFilter;
 
 	/**
 	 * Creates a new instance.
-	 * 
+	 *
 	 * @param file
 	 *            The file to read.
 	 * @param workers
 	 *            The number of worker threads for decoding PBF blocks.
 	 */
 	public PbfDecoder(final File file, int workers) {
+		this(file, workers, null);
+	}
+
+	/**
+	 * Creates a new instance.
+	 *
+	 * @param file
+	 *            The file to read.
+	 * @param workers
+	 *            The number of worker threads for decoding PBF blocks.
+	 * @param tagFilter
+	 * 			  Only this tags with names that pass this predicate are stored. May be null
+	 */
+	public PbfDecoder(final File file, int workers, Predicate<String> tagFilter) {
 		this.workers = workers;
 		this.maxPendingBlobs = workers + 1;
+		this.tagFilter = tagFilter;
 
 		// Open PBF file
 		try {
@@ -177,7 +194,7 @@ public class PbfDecoder {
 			};
 
 			// Create the blob decoder itself and execute it on a worker thread.
-			PbfBlobDecoder blobDecoder = new PbfBlobDecoder(rawBlob.getType(), rawBlob.getData(), decoderListener, type);
+			PbfBlobDecoder blobDecoder = new PbfBlobDecoder(rawBlob.getType(), rawBlob.getData(), decoderListener, type, tagFilter);
 			executorService.execute(blobDecoder);
 
 			// If the number of pending blobs has reached capacity we must begin
