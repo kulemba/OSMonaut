@@ -25,6 +25,7 @@ package net.morbz.osmonaut.geometry;
 */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,6 +46,11 @@ import net.morbz.osmonaut.osm.Way;
 public class MultiPolygon implements IPolygon  {
 	private ArrayList<MultiPolygonMember> members = new ArrayList<MultiPolygonMember>();
 	private Bounds bounds = new Bounds();
+
+	public MultiPolygon(Collection<MultiPolygonMember> members) {
+		for(MultiPolygonMember member : members)
+			add(member);
+	}
 
 	/**
 	 * Creates a multipolygon that consists of the ways of the relation.
@@ -208,8 +214,12 @@ public class MultiPolygon implements IPolygon  {
 	 * Creates and adds a new polygon member and extends the bounds.
 	 */
 	private void add(MultiPolygonMember.Type type, Polygon polygon) {
-		members.add(new MultiPolygonMember(type, polygon));
-		bounds.extend(polygon.getBounds());
+		add(new MultiPolygonMember(type, polygon));
+	}
+
+	private void add(MultiPolygonMember member) {
+		members.add(member);
+		bounds.extend(member.getPolygon().getBounds());
 	}
 
 	/**
