@@ -27,6 +27,7 @@ package net.morbz.osmonaut.osm;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.morbz.osmonaut.geometry.Bounds;
@@ -59,7 +60,7 @@ public class Relation extends Entity {
 	 */
 	public Relation(long id, Tags tags, List<RelationMember> members, boolean isIncomplete) {
 		super(id, tags);
-		this.members = members;
+		this.members = members != null ? new ArrayList<>(members) : null;
 		this.isIncomplete = isIncomplete;
 	}
 

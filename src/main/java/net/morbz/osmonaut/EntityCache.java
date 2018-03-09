@@ -114,5 +114,6 @@ public class EntityCache<T extends Entity> {
 
 	public void removeEntity(T entity) {
 		entityMap.remove(entity);
+		entity.clearTags();
 	}
 }

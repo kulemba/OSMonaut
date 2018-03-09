@@ -127,7 +127,11 @@ public class PbfDecoder {
 			// their results.
 			lock.unlock();
 			for (Entity entity : blobResult.getEntities()) {
-				sink.foundEntity(entity);
+				try {
+					sink.foundEntity(entity);
+				} catch (Throwable ex) {
+					ex.printStackTrace();
+				}
 			}
 			lock.lock();
 		}
