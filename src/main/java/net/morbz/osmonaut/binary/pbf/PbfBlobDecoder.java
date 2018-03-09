@@ -143,9 +143,10 @@ public class PbfBlobDecoder implements Runnable {
 		Tags tags = new Tags();
 		Iterator<Integer> keyIterator = keys.iterator();
 		Iterator<Integer> valueIterator = values.iterator();
+		String key,value;
 		while (keyIterator.hasNext()) {
-			String key = fieldDecoder.decodeString(keyIterator.next());
-			String value = fieldDecoder.decodeString(valueIterator.next());
+			key = fieldDecoder.decodeString(keyIterator.next());
+			value = fieldDecoder.decodeString(valueIterator.next());
 			if(tagFilter == null || tagFilter.test(key))
 				tags.set(key, value);
 		}
@@ -190,6 +191,7 @@ public class PbfBlobDecoder implements Runnable {
 			// in the same PBF array. Each set of tags is delimited by an index
 			// with a value of 0.
 			Tags tags = new Tags();
+			String key,value;
 			while (keysValuesIterator.hasNext()) {
 				int keyIndex = keysValuesIterator.next();
 				if (keyIndex == 0) {
@@ -201,8 +203,8 @@ public class PbfBlobDecoder implements Runnable {
 				}
 				int valueIndex = keysValuesIterator.next();
 
-				String key = fieldDecoder.decodeString(keyIndex);
-				String value = fieldDecoder.decodeString(valueIndex);
+				key = fieldDecoder.decodeString(keyIndex);
+				value = fieldDecoder.decodeString(valueIndex);
 				if(tagFilter == null || tagFilter.test(key))
 					tags.set(key, value);
 			}

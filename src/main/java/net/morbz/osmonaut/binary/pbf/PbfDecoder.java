@@ -108,9 +108,10 @@ public class PbfDecoder {
 	}
 
 	private void sendResultsToSink(int targetQueueSize) {
+		PbfBlobResult blobResult;
 		while (blobResults.size() > targetQueueSize) {
 			// Get the next result from the queue and wait for it to complete.
-			PbfBlobResult blobResult = blobResults.remove();
+			blobResult = blobResults.remove();
 			while (!blobResult.isComplete()) {
 				// The thread hasn't finished processing yet so wait for an
 				// update from another thread before checking again.

@@ -310,10 +310,11 @@ public class Osmonaut {
 					// Assemble members
 					boolean incomplete = relation.isIncomplete();
 					List<RelationMember> members = new ArrayList<RelationMember>();
+					Entity memberEntity;
 					for (RelationMember member : relation.getMembers()) {
 						// Get real entity
 						long id = member.getEntity().getId();
-						Entity memberEntity = null;
+						memberEntity = null;
 						switch (member.getEntity().getEntityType()) {
 						case NODE:
 							memberEntity = nodeCache.getEntity(id);
