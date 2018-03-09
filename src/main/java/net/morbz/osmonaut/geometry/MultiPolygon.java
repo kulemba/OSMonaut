@@ -233,6 +233,64 @@ public class MultiPolygon implements IPolygon  {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public double getArea() {
+		double area = 0;
+		for(MultiPolygonMember member : members) {
+			if(member.getType() == Type.OUTER)
+				area += member.getPolygon().getArea();
+			else if(member.getType() == Type.INNER)
+				area -= member.getPolygon().getArea();
+		}
+		return area;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double getSignedArea() {
+		double area = 0;
+		for(MultiPolygonMember member : members) {
+			if(member.getType() == Type.OUTER)
+				area += member.getPolygon().getSignedArea();
+			else if(member.getType() == Type.INNER)
+				area -= member.getPolygon().getSignedArea();
+		}
+		return area;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public LatLon getCenter() {
+		if(members.isEmpty())
+			return null;
+		double lat=0,lon=0,a=0;
+		LatLon ctmp;
+		double atmp;
+		for(MultiPolygonMember member : members) {
+			if(member.getType() == Type.OUTER) {
+				ctmp = member.getPolygon().getCenter();
+				atmp = member.getPolygon().getArea(); // *not* signed area here!
+				lat += ctmp.getLat() * atmp;
+				lon += ctmp.getLon() * atmp;
+				a += atmp;
+			} else if(member.getType() == Type.INNER) {
+				ctmp = member.getPolygon().getCenter();
+				atmp = member.getPolygon().getArea(); // *not* signed area here!
+				lat -= ctmp.getLat() * atmp;
+				lon -= ctmp.getLon() * atmp;
+				a -= atmp;
+			}
+		}
+		return new LatLon(lat/a, lon/a);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public List<LatLon> getCoords() {
 		List<LatLon> coords = new ArrayList<LatLon>();
 		for (MultiPolygonMember member : members) {

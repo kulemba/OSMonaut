@@ -34,6 +34,19 @@ import java.util.List;
  * @author MorbZ
  */
 public interface IPolygon extends IGeometry {
+
+	/**
+	 * @return The signed area of this polygon
+	 */
+	public double getSignedArea();
+
+	/**
+	 * @return The signed area of this polygon
+	 */
+	public default double getArea() {
+		return Math.abs(getSignedArea());
+	}
+
 	/**
 	 * @return All coordinates that are part of this polygon
 	 */

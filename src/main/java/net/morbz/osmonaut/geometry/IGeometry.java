@@ -24,12 +24,19 @@ package net.morbz.osmonaut.geometry;
 * SOFTWARE.
 */
 
+import net.morbz.osmonaut.osm.LatLon;
+
 /**
  * The interface for all geometries.
  *
  * @author poseidon
  */
 public interface IGeometry {
+
+	/**
+	 * @return The geometric centroid of this polygon or null if there are no coordinates
+	 */
+	public LatLon getCenter();
 
 	/**
 	 * Returns a bounding box that contains all points of this polygon.

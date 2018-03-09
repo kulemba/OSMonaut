@@ -96,6 +96,10 @@ public class Polygon implements IPolygon {
 		this.bounds.extend(latlon);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public double getSignedArea() {
 		int n;
 		if((n = coords.size()-1) >= 3) { // coords is closed, discard the last point
@@ -120,10 +124,9 @@ public class Polygon implements IPolygon {
 	}
 
 	/**
-	 * Returns the geometric centroid of this polygon.
-	 * 
-	 * @return The center of this polygon or null if there are no coordinates
+	 * {@inheritDoc}
 	 */
+	@Override
 	public LatLon getCenter() {
 		// from http://www.faqs.org/faqs/graphics/algorithms-faq/ Subject 2.02
 		int n;
