@@ -50,7 +50,9 @@ public interface IGeometry {
 					return new Polygon((Way) entity);
 			}
 		} else if(entity instanceof Relation) {
-			return new MultiPolygon((Relation)entity);
+			// try a multi polygon first (succeeds if it has at least one 'outer' role)
+			MultiPolygon multiPolygon = new MultiPolygon((Relation)entity);
+			return multiPolygon.getMembers().isEmpty() ? new GeometryCollection((Relation)entity) : multiPolygon;
 		} else
 			throw new RuntimeException("Cannot construct a Geometry from Entity " + entity);
 	}
