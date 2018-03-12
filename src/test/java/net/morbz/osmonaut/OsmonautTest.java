@@ -26,9 +26,12 @@ import net.morbz.osmonaut.osm.Tags;
 import net.morbz.osmonaut.osm.Way;
 
 public class OsmonautTest {
+	private static final String CONCORDE_PBF = "/concorde-paris.osm.pbf";
+	private static final String HIGHWAY = "/oklahoma-highway.pbf";
+
 	@Test
 	public void should_find_nodes() throws Exception {
-		List<Node> nodes = scan(new EntityFilter(true, false, false), new Predicate<Tags>() {
+		List<Node> nodes = scan(CONCORDE_PBF, new EntityFilter(true, false, false), new Predicate<Tags>() {
 			@Override
 			public boolean test(Tags tags) {
 				return tags.hasKeyValue("railway", "subway_entrance");
@@ -45,7 +48,7 @@ public class OsmonautTest {
 
 	@Test
 	public void should_find_ways() throws Exception {
-		List<Way> ways = scan(new EntityFilter(false, true, false), new Predicate<Tags>() {
+		List<Way> ways = scan(CONCORDE_PBF, new EntityFilter(false, true, false), new Predicate<Tags>() {
 			@Override
 			public boolean test(Tags tags) {
 				return tags.hasKeyValue("bridge", "yes");
@@ -58,7 +61,7 @@ public class OsmonautTest {
 
 	@Test
 	public void should_find_relations() throws Exception {
-		List<Relation> relations = scan(new EntityFilter(false, false, true), new Predicate<Tags>() {
+		List<Relation> relations = scan(CONCORDE_PBF, new EntityFilter(false, false, true), new Predicate<Tags>() {
 			@Override
 			public boolean test(Tags tags) {
 				return tags.hasKeyValue("public_transport", "stop_area") && tags.hasKeyValue("name", "Concorde");
@@ -81,14 +84,14 @@ public class OsmonautTest {
 		};
 	}
 
-	private <T> List<T> scan(EntityFilter filter, final Predicate<Tags> predicate) {
-		String file = OsmonautTest.class.getResource("/concorde-paris.osm.pbf").getPath();
+	private <T> List<T> scan(String filename, EntityFilter filter, final Predicate<Tags> predicate) {
+		String file = OsmonautTest.class.getResource(filename).getPath();
 		final List<T> acc = new ArrayList<>();
 		Osmonaut osmonaut = new Osmonaut(file, filter);
 		osmonaut.scan(new IOsmonautReceiver() {
 			@Override
 			public boolean needsEntity(EntityType type, Tags tags) {
-				return predicate.test(tags);
+				return predicate == null || predicate.test(tags);
 			}
 
 			@SuppressWarnings("unchecked")
@@ -276,5 +279,16 @@ public class OsmonautTest {
 			));
 			assertThat(shape.getCenter()).isEqualTo(new LatLon(1.25, 2.75));
 		}
+	}
+
+	@Test
+	public void road_centroid() {
+		List<Way> ways = scan(HIGHWAY, new EntityFilter(false, true, false), null);
+
+		assertThat(ways).hasSize(1);
+		LatLon center = ways.get(0).getCenter();
+		assertThat(center).isNotNull();
+		assertThat(center.getLat()).isCloseTo(36.9703097, Percentage.withPercentage(0.1));
+		assertThat(center.getLon()).isCloseTo(-96.6512246, Percentage.withPercentage(0.1));
 	}
 }
