@@ -9,10 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import net.morbz.osmonaut.geometry.LineString;
-import net.morbz.osmonaut.geometry.MultiPolygon;
-import net.morbz.osmonaut.geometry.MultiPolygonMember;
-import net.morbz.osmonaut.geometry.Polygon;
+import net.morbz.osmonaut.geometry.*;
 import org.assertj.core.data.Percentage;
 import org.junit.Test;
 
@@ -290,5 +287,40 @@ public class OsmonautTest {
 		assertThat(center).isNotNull();
 		assertThat(center.getLat()).isCloseTo(36.9703097, Percentage.withPercentage(0.1));
 		assertThat(center.getLon()).isCloseTo(-96.6512246, Percentage.withPercentage(0.1));
+	}
+
+	@Test
+	public void geometrycollection_centroid() {
+		MultiPolygon multiPolygon = new MultiPolygon(Arrays.asList(
+				new MultiPolygonMember(MultiPolygonMember.Type.OUTER, new Polygon(Arrays.asList(
+						new LatLon(0, 0),
+						new LatLon(0, 2),
+						new LatLon(2, 2),
+						new LatLon(2, 0)
+				))),
+				new MultiPolygonMember(MultiPolygonMember.Type.OUTER, new Polygon(Arrays.asList(
+						new LatLon(2, 2),
+						new LatLon(2, 6),
+						new LatLon(6, 6),
+						new LatLon(6, 2)
+				))),
+				new MultiPolygonMember(MultiPolygonMember.Type.INNER, new Polygon(Arrays.asList(
+						new LatLon(4, 4),
+						new LatLon(4, 6),
+						new LatLon(6, 6),
+						new LatLon(6, 4)
+				)))
+		));
+		LineString lineString = new LineString(Arrays.asList(
+				new LatLon(0, 0),
+				new LatLon(0, 2),
+				new LatLon(2, 2),
+				new LatLon(2, 6)
+		));
+		Point point = new Point(new LatLon(-1,-1));
+
+		GeometryCollection collection = new GeometryCollection(Arrays.asList(multiPolygon,lineString,point));
+		// centroid must be equal to the centroid of highest dimension
+		assertThat(collection.getCenter()).isEqualTo(multiPolygon.getCenter());
 	}
 }
