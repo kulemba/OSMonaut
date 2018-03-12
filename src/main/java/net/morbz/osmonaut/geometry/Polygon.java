@@ -24,11 +24,9 @@ package net.morbz.osmonaut.geometry;
 * SOFTWARE.
 */
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.morbz.osmonaut.osm.LatLon;
-import net.morbz.osmonaut.osm.Node;
 import net.morbz.osmonaut.osm.Way;
 
 /**
@@ -37,9 +35,7 @@ import net.morbz.osmonaut.osm.Way;
  * 
  * @author MorbZ
  */
-public class Polygon implements IPolygon {
-	private List<LatLon> coords = new ArrayList<LatLon>();
-	private Bounds bounds = new Bounds();
+public class Polygon extends LineString implements IPolygon {
 
 	/**
 	 * Creates a polygon that contains all coordinates of the given list.
@@ -48,18 +44,10 @@ public class Polygon implements IPolygon {
 	 *            The list of coordinates
 	 */
 	public Polygon(List<LatLon> coords) {
-		// Check size
-		if (coords.size() == 0) {
-			return;
-		}
-
-		// Add coords
-		for (LatLon latlon : coords) {
-			add(latlon);
-		}
+		super(coords);
 
 		// Close polygon
-		if (!coords.get(0).equals(coords.get(coords.size() - 1))) {
+		if (!isClosed()) {
 			add(coords.get(0));
 		}
 	}
@@ -72,28 +60,12 @@ public class Polygon implements IPolygon {
 	 *            The way
 	 */
 	public Polygon(Way way) {
-		// Check size
-		if (way.getNodes().size() == 0) {
-			return;
-		}
-
-		// Add way nodes
-		for (Node node : way.getNodes()) {
-			add(node.getLatlon());
-		}
+		super(way);
 
 		// Close polygon
 		if (!way.isClosed()) {
 			add(way.getNodes().get(0).getLatlon());
 		}
-	}
-
-	/**
-	 * Adds a coordinate to this polygon and extend bounds.
-	 */
-	private void add(LatLon latlon) {
-		this.coords.add(latlon);
-		this.bounds.extend(latlon);
 	}
 
 	/**
@@ -160,14 +132,6 @@ public class Polygon implements IPolygon {
 	@Override
 	public List<LatLon> getCoords() {
 		return coords;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Bounds getBounds() {
-		return bounds;
 	}
 
 	/**

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import net.morbz.osmonaut.geometry.LineString;
 import net.morbz.osmonaut.geometry.MultiPolygon;
 import net.morbz.osmonaut.geometry.MultiPolygonMember;
 import net.morbz.osmonaut.geometry.Polygon;
@@ -253,6 +254,27 @@ public class OsmonautTest {
 			));
 			assertThat(twoSquares.getSignedArea()).isEqualTo(16);
 			assertThat(twoSquares.getCenter()).isEqualTo(new LatLon(3, 3));
+		}
+	}
+
+	@Test
+	public void linestring_centroid() {
+		{
+			/*
+			 * Just some weird shape, wound CCW
+			 *  2 ┤     ┌─→───→─╴
+			 *  1 ┤     ↑ •        the dot (roughly) denotes the centroid
+			 *  0 ┤ ╶─→─┘
+			 * -1 ┼─┬─┬─┬─┬─┬─┬─┬─
+			 *   -1 0 1 2 3 4 5 6
+			 */
+			LineString shape = new LineString(Arrays.asList(
+					new LatLon(0, 0),
+					new LatLon(0, 2),
+					new LatLon(2, 2),
+					new LatLon(2, 6)
+			));
+			assertThat(shape.getCenter()).isEqualTo(new LatLon(1.25, 2.75));
 		}
 	}
 }
