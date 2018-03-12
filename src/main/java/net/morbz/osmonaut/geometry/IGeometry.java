@@ -24,7 +24,7 @@ package net.morbz.osmonaut.geometry;
 * SOFTWARE.
 */
 
-import net.morbz.osmonaut.osm.LatLon;
+import net.morbz.osmonaut.osm.*;
 
 /**
  * The interface for all geometries.
@@ -32,6 +32,28 @@ import net.morbz.osmonaut.osm.LatLon;
  * @author poseidon
  */
 public interface IGeometry {
+
+	public static IGeometry from(Entity entity) {
+		if(entity instanceof Node) {
+			return new Point((Node)entity);
+		} else if(entity instanceof Way) {
+			/*
+			 * decide whether this is to be interpreted as a LineString or a Polygon
+			 * https://wiki.openstreetmap.org/wiki/Way
+			 */
+			if(!((Way) entity).isClosed())
+				return new LineString((Way) entity);
+			else {
+				if ((entity.getTags().hasKey("highway") || entity.getTags().hasKey("barrier")) && !entity.getTags().hasKeyValue("area","yes"))
+					return new LineString((Way) entity);
+				else
+					return new Polygon((Way) entity);
+			}
+		} else if(entity instanceof Relation) {
+			return new MultiPolygon((Relation)entity);
+		} else
+			throw new RuntimeException("Cannot construct a Geometry from Entity " + entity);
+	}
 
 	/**
 	 * @return The geometric centroid of this polygon or null if there are no coordinates
