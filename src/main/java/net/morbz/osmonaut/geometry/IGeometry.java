@@ -24,25 +24,25 @@ package net.morbz.osmonaut.geometry;
 * SOFTWARE.
 */
 
-import net.morbz.osmonaut.osm.*;
-
-import java.util.List;
-
 /**
- * The interface for all types of polygons.
- * 
- * @author MorbZ
+ * The interface for all geometries.
+ *
+ * @author poseidon
  */
-public interface IPolygon extends IGeometry {
-	/**
-	 * @return All coordinates that are part of this polygon
-	 */
-	public List<LatLon> getCoords();
+public interface IGeometry {
 
 	/**
-	 * @param latlon
-	 *            The coordinate
-	 * @return True if the given coordinate is within this polygon
+	 * Returns a bounding box that contains all points of this polygon.
+	 *
+	 * @return The surrounding bounding box
 	 */
-	public boolean contains(LatLon latlon);
+	public Bounds getBounds();
+
+	/**
+	 * The inherent dimension of this Geometry object, which must be less than or equal to the coordinate dimension.
+	 * OGC SPEC s2.1.1.1 - returns 0 for POINT, 1 for LINESTRING, 2 for POLYGON, and the largest dimension of the
+	 * components of a GEOMETRYCOLLECTION. If unknown (empty geometry) null is returned.
+	 * @return the dimension of this geometry
+	 */
+	public Integer getDimension();
 }

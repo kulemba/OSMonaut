@@ -37,7 +37,7 @@ import net.morbz.osmonaut.osm.Way;
  * 
  * @author MorbZ
  */
-public class Polygon extends IPolygon {
+public class Polygon implements IPolygon {
 	private List<LatLon> coords = new ArrayList<LatLon>();
 	private Bounds bounds = new Bounds();
 
@@ -167,5 +167,10 @@ public class Polygon extends IPolygon {
 			}
 		}
 		return isIn;
+	}
+
+	@Override
+	public Integer getDimension() {
+		return !coords.isEmpty() ? 2 : null;
 	}
 }

@@ -42,7 +42,7 @@ import net.morbz.osmonaut.osm.Way;
  * 
  * @author MorbZ
  */
-public class MultiPolygon extends IPolygon {
+public class MultiPolygon implements IPolygon  {
 	private ArrayList<MultiPolygonMember> members = new ArrayList<MultiPolygonMember>();
 	private Bounds bounds = new Bounds();
 
@@ -263,5 +263,10 @@ public class MultiPolygon extends IPolygon {
 			}
 		}
 		return outerCount > innerCount;
+	}
+
+	@Override
+	public Integer getDimension() {
+		return !members.isEmpty() ? 2 : null;
 	}
 }
