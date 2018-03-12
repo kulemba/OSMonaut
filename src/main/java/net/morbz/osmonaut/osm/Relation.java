@@ -89,21 +89,6 @@ public class Relation extends Entity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LatLon getCenter() {
-		Bounds bounds = new Bounds();
-		for (RelationMember member : members) {
-			LatLon center = member.getEntity().getCenter();
-			if (center != null) {
-				bounds.extend(center);
-			}
-		}
-		return bounds.getCenter();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public Bounds getBounds() {
 		Bounds bounds = new Bounds();
 		for (RelationMember member : members) {

@@ -30,7 +30,6 @@ import java.io.ObjectOutput;
 import java.util.List;
 
 import net.morbz.osmonaut.geometry.Bounds;
-import net.morbz.osmonaut.geometry.Polygon;
 import net.morbz.osmonaut.util.StringUtil;
 
 /**
@@ -74,16 +73,6 @@ public class Way extends Entity {
 	@Override
 	public EntityType getEntityType() {
 		return EntityType.WAY;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public LatLon getCenter() {
-		// Use a polygon to get the centroid
-		Polygon poly = new Polygon(this);
-		return poly.getCenter();
 	}
 
 	/**

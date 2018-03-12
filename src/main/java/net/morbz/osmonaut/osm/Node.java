@@ -86,14 +86,6 @@ public class Node extends Entity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LatLon getCenter() {
-		return getLatlon();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public Bounds getBounds() {
 		Bounds bounds = new Bounds();
 		bounds.extend(getLatlon());

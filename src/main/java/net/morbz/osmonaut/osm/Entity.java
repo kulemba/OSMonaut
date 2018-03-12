@@ -30,6 +30,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import net.morbz.osmonaut.geometry.Bounds;
+import net.morbz.osmonaut.geometry.IGeometry;
 
 /**
  * The base class for all OSM entities.
@@ -117,7 +118,11 @@ public abstract class Entity implements Externalizable {
 	 * 
 	 * @return The center of this entity or null if there is no data
 	 */
-	public abstract LatLon getCenter();
+	public final LatLon getCenter() {
+		// Use the geometry to get the centroid
+		IGeometry geometry = IGeometry.from(this);
+		return geometry != null ? geometry.getCenter() : null;
+	}
 
 	/**
 	 * Returns a bounding box that contains all elements and sub-entities of
