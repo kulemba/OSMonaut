@@ -271,7 +271,8 @@ public class Osmonaut {
 					Way way = (Way)entity;
 
 					// Is needed?
-					if (!entityNeededForReceiver(way) && !wayCache.isNeeded(way.getId())) {
+					boolean isNeededForReceiver = entityNeededForReceiver(way);
+					if (!isNeededForReceiver && !wayCache.isNeeded(way.getId())) {
 						return;
 					}
 
@@ -289,13 +290,16 @@ public class Osmonaut {
 					// Assemble way
 					Way newWay = new Way(way.getId(), way.getTags(), nodes);
 
+					boolean isNeededForRelation = wayCache.isNeeded(way.getId());
+					newWay.setPartOfRelation(isNeededForRelation);
+
 					// Is needed by receiver?
-					if (entityNeededForReceiver(way)) {
+					if (isNeededForReceiver) {
 						receiver.foundEntity(newWay);
 					}
 
 					// Is needed for relations?
-					if (wayCache.isNeeded(way.getId())) {
+					if (isNeededForRelation) {
 						wayCache.addEntity(newWay);
 					} else if (clearEntityTags) {
 						//TODO count the number of ways/relations needs a node
