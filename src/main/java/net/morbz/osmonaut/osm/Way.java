@@ -40,6 +40,7 @@ import net.morbz.osmonaut.util.StringUtil;
  */
 public class Way extends Entity {
 	private List<Node> nodes;
+	private boolean isPartOfRelation;  //Is way part of a relation
 
 	/**
 	 * @param id
@@ -138,5 +139,13 @@ public class Way extends Entity {
 		super.readExternal(in);
 
 		nodes = (List<Node>)in.readObject();
+	}
+
+	public boolean isPartOfRelation() {
+		return isPartOfRelation;
+	}
+
+	public void setPartOfRelation(boolean isPartOfRelation) {
+		this.isPartOfRelation = isPartOfRelation;
 	}
 }
