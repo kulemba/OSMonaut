@@ -21,7 +21,11 @@ public class GeometryCollection implements IGeometry {
             add(member);
     }
 
-    private void add(IGeometry member) {
+    public GeometryCollection() {
+        //Used when using the add method
+    }
+
+    public void add(IGeometry member) {
         this.members.add(member);
         this.bounds.extend(member.getBounds());
     }
