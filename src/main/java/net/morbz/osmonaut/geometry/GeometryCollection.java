@@ -68,4 +68,13 @@ public class GeometryCollection implements IGeometry {
         }
         return maxDimension;
     }
+
+    @Override
+    public Integer getNumberOfPoints() {
+        int numberOfPoints = 0;
+        for (IGeometry member : members) {
+            numberOfPoints += member.getNumberOfPoints();
+        }
+        return numberOfPoints;
+    }
 }

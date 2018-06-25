@@ -56,4 +56,9 @@ public class Point implements IGeometry {
     public Integer getDimension() {
         return point != null ? 0 : null;
     }
+
+    @Override
+    public Integer getNumberOfPoints() {
+        return 1;
+    }
 }

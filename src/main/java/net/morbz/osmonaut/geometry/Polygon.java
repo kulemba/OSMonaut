@@ -164,4 +164,9 @@ public class Polygon extends LineString implements IPolygon {
 	public Integer getDimension() {
 		return !coords.isEmpty() ? 2 : null;
 	}
+
+	@Override
+	public Integer getNumberOfPoints() {
+		return coords.size();
+	}
 }

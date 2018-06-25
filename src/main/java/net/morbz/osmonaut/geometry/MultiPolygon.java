@@ -337,4 +337,9 @@ public class MultiPolygon implements IPolygon  {
 	public Integer getDimension() {
 		return !members.isEmpty() ? 2 : null;
 	}
+
+	@Override
+	public Integer getNumberOfPoints() {
+		return getCoords().size();
+	}
 }

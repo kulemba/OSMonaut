@@ -136,4 +136,9 @@ public class LineString implements IGeometry {
     public Integer getDimension() {
         return !coords.isEmpty() ? 1 : null;
     }
+
+    @Override
+    public Integer getNumberOfPoints() {
+        return coords.size();
+    }
 }

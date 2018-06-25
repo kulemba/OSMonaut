@@ -76,4 +76,10 @@ public interface IGeometry {
 	 * @return the dimension of this geometry
 	 */
 	public Integer getDimension();
+
+	/**
+	 * Number of LatLon coordinates
+	 * @return 1...n
+	 */
+	public Integer getNumberOfPoints();
 }
