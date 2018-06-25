@@ -28,6 +28,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 import net.morbz.osmonaut.geometry.Bounds;
 import net.morbz.osmonaut.geometry.IGeometry;
@@ -104,6 +105,11 @@ public abstract class Entity implements Externalizable {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
 
 	/**
